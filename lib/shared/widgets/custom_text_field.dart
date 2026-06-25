@@ -116,25 +116,25 @@ class _CustomTextFieldState extends State<CustomTextField> {
               horizontal: AppSpacing.md,
               vertical: AppSpacing.md,
             ),
-            border: OutlineInputBorder(
+            border: const OutlineInputBorder(
               borderRadius: AppRadius.radiusMd,
-              borderSide: const BorderSide(color: AppColors.border, width: 1),
+              borderSide: BorderSide(color: AppColors.border, width: 1),
             ),
-            enabledBorder: OutlineInputBorder(
+            enabledBorder: const OutlineInputBorder(
               borderRadius: AppRadius.radiusMd,
-              borderSide: const BorderSide(color: AppColors.border, width: 1),
+              borderSide: BorderSide(color: AppColors.border, width: 1),
             ),
-            focusedBorder: OutlineInputBorder(
+            focusedBorder: const OutlineInputBorder(
               borderRadius: AppRadius.radiusMd,
-              borderSide: const BorderSide(color: AppColors.borderFocused, width: 1.5),
+              borderSide: BorderSide(color: AppColors.borderFocused, width: 1.5),
             ),
-            errorBorder: OutlineInputBorder(
+            errorBorder: const OutlineInputBorder(
               borderRadius: AppRadius.radiusMd,
-              borderSide: const BorderSide(color: AppColors.error, width: 1),
+              borderSide: BorderSide(color: AppColors.error, width: 1),
             ),
-            focusedErrorBorder: OutlineInputBorder(
+            focusedErrorBorder: const OutlineInputBorder(
               borderRadius: AppRadius.radiusMd,
-              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+              borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
           ),
         ),

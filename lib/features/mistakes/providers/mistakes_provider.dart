@@ -76,3 +76,10 @@ final mistakesProvider =
 /// Read and cleared by [PracticeScreen.initState]. This avoids passing
 /// data through GoRouter (which drops extra/query on web).
 final retryQuestionIdsProvider = StateProvider<List<String>?>((_) => null);
+
+/// Holds the question ID that [PracticeScreen] should open first.
+///
+/// Written by [BookmarksScreen] and [MistakesScreen] before pushing the
+/// practice route. Read and cleared in [PracticeScreen.initState].
+/// Falls back to the first question when null or not found.
+final initialQuestionIdProvider = StateProvider<String?>((_) => null);

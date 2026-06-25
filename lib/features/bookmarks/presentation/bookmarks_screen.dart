@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:exam_prep_app/features/bookmarks/providers/bookmark_provider.dart';
 import 'package:exam_prep_app/features/chapters/data/dummy_chapters.dart';
+import 'package:exam_prep_app/features/mistakes/providers/mistakes_provider.dart';
 import 'package:exam_prep_app/features/practice/data/dummy_questions.dart';
 import 'package:exam_prep_app/features/practice/models/question.dart';
 import 'package:exam_prep_app/features/subjects/data/subjects_data.dart';
@@ -231,9 +232,13 @@ class _BookmarkTile extends ConsumerWidget {
         AppSpacing.cardGap,
       ),
       child: GestureDetector(
-        onTap: () => context.push(
-          '/subjects/${entry.subjectId}/chapters/${entry.chapterId}/practice',
-        ),
+        onTap: () {
+          ref.read(initialQuestionIdProvider.notifier).state =
+              entry.question.id;
+          context.push(
+            '/subjects/${entry.subjectId}/chapters/${entry.chapterId}/practice',
+          );
+        },
         behavior: HitTestBehavior.opaque,
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.cardPadding),
@@ -323,7 +328,7 @@ class _SourceTag extends StatelessWidget {
     final label = '${entry.question.source.label} · ${entry.question.year}';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.cardBackgroundAlt,
         borderRadius: AppRadius.radiusXs,
       ),

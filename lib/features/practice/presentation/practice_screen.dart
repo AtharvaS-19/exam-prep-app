@@ -22,8 +22,10 @@ import '../../../../shared/widgets/primary_button.dart';
 /// - Phase 5: bookmark toggle in AppBar via [bookmarkProvider]
 /// - Phase 6: auto-records wrong answers to [mistakesProvider]; removes entry
 ///   when the student later answers the same question correctly
-/// - [questionIds]: when provided (retry mode), only the listed question IDs
+/// - [retryQuestionIdsProvider]: when set (retry mode), only the listed IDs
 ///   are included in the session, in the given order.
+/// - [initialQuestionIdProvider]: when set, the session opens at that question
+///   ID rather than the first question. Falls back to index 0 if not found.
 class PracticeScreen extends ConsumerStatefulWidget {
   const PracticeScreen({
     super.key,
@@ -56,9 +58,9 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
   void initState() {
     super.initState();
     final all = DummyQuestions.forChapter(widget.chapterId);
-    // Check for retry-mode IDs set by the Mistakes screen.
+
+    // ── Retry mode: filter to only the provided wrong-answer IDs ────────────
     final retryIds = ref.read(retryQuestionIdsProvider);
-    // Clear the provider safely after the current build phase completes
     if (retryIds != null) {
       Future.microtask(
           () => ref.read(retryQuestionIdsProvider.notifier).state = null);
@@ -73,6 +75,15 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
       _questions = filtered.isNotEmpty ? filtered : all;
     } else {
       _questions = all;
+    }
+
+    // ── Initial question: jump to the requested ID if provided ──────────────
+    final initialId = ref.read(initialQuestionIdProvider);
+    if (initialId != null) {
+      Future.microtask(
+          () => ref.read(initialQuestionIdProvider.notifier).state = null);
+      final idx = _questions.indexWhere((q) => q.id == initialId);
+      if (idx != -1) _currentIndex = idx;
     }
   }
 

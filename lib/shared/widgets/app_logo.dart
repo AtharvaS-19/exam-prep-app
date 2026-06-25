@@ -67,7 +67,7 @@ class _LogoMark extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.primary,
         borderRadius: AppRadius.radiusMd,
       ),

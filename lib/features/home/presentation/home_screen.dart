@@ -115,7 +115,7 @@ class _ContinuePracticingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.primary,
         borderRadius: AppRadius.radiusXl,
       ),
@@ -124,7 +124,7 @@ class _ContinuePracticingCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Badge
-          _Badge(label: 'Physics · JEE Main'),
+          const _Badge(label: 'Physics · JEE Main'),
           const SizedBox(height: AppSpacing.sm),
           // Chapter title
           const Text(
@@ -157,9 +157,9 @@ class _ContinuePracticingCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
                 '63% complete',
                 style: TextStyle(fontSize: 12, color: Colors.white60),

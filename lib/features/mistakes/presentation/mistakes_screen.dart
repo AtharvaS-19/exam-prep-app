@@ -241,6 +241,9 @@ class _MistakeTile extends ConsumerWidget {
           // PracticeScreen.initState reads and clears this.
           ref.read(retryQuestionIdsProvider.notifier).state =
               chapterQuestionIds;
+          // Open the session at the tapped question, not the first one.
+          ref.read(initialQuestionIdProvider.notifier).state =
+              entry.question.id;
           context.push(
             '/subjects/${entry.wrong.subjectId}'
             '/chapters/${entry.wrong.chapterId}'

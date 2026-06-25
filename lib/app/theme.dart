@@ -206,40 +206,40 @@ abstract final class AppTheme {
       );
 
   // ── Input decoration ───────────────────────────────────────────────────────
-  static InputDecorationTheme get _inputDecorationTheme => InputDecorationTheme(
+  static InputDecorationTheme get _inputDecorationTheme => const InputDecorationTheme(
         filled: true,
         fillColor: AppColors.cardBackground,
-        contentPadding: const EdgeInsets.symmetric(
+        contentPadding: EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.md,
         ),
         border: OutlineInputBorder(
           borderRadius: AppRadius.radiusMd,
-          borderSide: const BorderSide(color: AppColors.border, width: 1),
+          borderSide: BorderSide(color: AppColors.border, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.radiusMd,
-          borderSide: const BorderSide(color: AppColors.border, width: 1),
+          borderSide: BorderSide(color: AppColors.border, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: AppRadius.radiusMd,
-          borderSide: const BorderSide(color: AppColors.borderFocused, width: 1.5),
+          borderSide: BorderSide(color: AppColors.borderFocused, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: AppRadius.radiusMd,
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
+          borderSide: BorderSide(color: AppColors.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: AppRadius.radiusMd,
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          borderSide: BorderSide(color: AppColors.error, width: 1.5),
         ),
-        hintStyle: const TextStyle(
+        hintStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 15,
           fontWeight: FontWeight.w400,
           color: AppColors.textTertiary,
         ),
-        labelStyle: const TextStyle(
+        labelStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 13,
           fontWeight: FontWeight.w500,

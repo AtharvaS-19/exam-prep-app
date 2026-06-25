@@ -219,9 +219,9 @@ class _SubjectIntro extends StatelessWidget {
                   letterSpacing: -0.4,
                 ),
               ),
-              Text(
+              const Text(
                 'Complete chapter-wise previous year questions',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
                   color: AppColors.textTertiary,
@@ -283,17 +283,17 @@ class _SearchBar extends StatelessWidget {
           horizontal: AppSpacing.md,
           vertical: AppSpacing.sm,
         ),
-        border: OutlineInputBorder(
+        border: const OutlineInputBorder(
           borderRadius: AppRadius.radiusMd,
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: AppColors.border),
         ),
-        enabledBorder: OutlineInputBorder(
+        enabledBorder: const OutlineInputBorder(
           borderRadius: AppRadius.radiusMd,
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: AppColors.border),
         ),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderRadius: AppRadius.radiusMd,
-          borderSide: const BorderSide(color: AppColors.borderFocused, width: 1.5),
+          borderSide: BorderSide(color: AppColors.borderFocused, width: 1.5),
         ),
       ),
     );

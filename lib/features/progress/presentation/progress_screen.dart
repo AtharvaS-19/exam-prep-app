@@ -18,16 +18,16 @@ class ProgressScreen extends StatelessWidget {
         title: const Text('Progress'),
         backgroundColor: AppColors.background,
       ),
-      body: SafeArea(
+      body: const SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
+          padding: EdgeInsets.symmetric(
             horizontal: AppSpacing.screenHorizontal,
             vertical: AppSpacing.xl,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Your progress',
                 style: TextStyle(
                   fontSize: 22,
@@ -36,8 +36,8 @@ class ProgressScreen extends StatelessWidget {
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              const Text(
+              SizedBox(height: AppSpacing.xs),
+              Text(
                 'Solve questions to start tracking your accuracy and chapter completion.',
                 style: TextStyle(
                   fontSize: 14,
@@ -46,15 +46,15 @@ class ProgressScreen extends StatelessWidget {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xxl),
-              const _SectionLabel('Overview'),
-              const SizedBox(height: AppSpacing.sm),
-              const _StatCardRow(),
-              const SizedBox(height: AppSpacing.xxl),
-              const _SectionLabel('Subject accuracy'),
-              const SizedBox(height: AppSpacing.sm),
-              const _SubjectProgressList(),
-              const SizedBox(height: AppSpacing.xxl),
+              SizedBox(height: AppSpacing.xxl),
+              _SectionLabel('Overview'),
+              SizedBox(height: AppSpacing.sm),
+              _StatCardRow(),
+              SizedBox(height: AppSpacing.xxl),
+              _SectionLabel('Subject accuracy'),
+              SizedBox(height: AppSpacing.sm),
+              _SubjectProgressList(),
+              SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),

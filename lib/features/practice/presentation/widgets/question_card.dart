@@ -108,7 +108,7 @@ class _OptionTile extends StatelessWidget {
     final bool isWrongSelected = selectedIndex == index && !isCorrect;
 
     if (isCorrect) {
-      return _OptionStyle(
+      return const _OptionStyle(
         background: AppColors.successLight,
         border: AppColors.success,
         labelBackground: AppColors.success,
@@ -119,7 +119,7 @@ class _OptionTile extends StatelessWidget {
     }
 
     if (isWrongSelected) {
-      return _OptionStyle(
+      return const _OptionStyle(
         background: AppColors.errorLight,
         border: AppColors.error,
         labelBackground: AppColors.error,
@@ -130,7 +130,7 @@ class _OptionTile extends StatelessWidget {
     }
 
     // Unselected, not correct — dim
-    return _OptionStyle(
+    return const _OptionStyle(
       background: AppColors.cardBackground,
       border: AppColors.border,
       labelBackground: AppColors.cardBackgroundAlt,

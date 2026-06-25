@@ -132,21 +132,21 @@ class _OrDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       children: [
-        const Expanded(child: Divider()),
+        Expanded(child: Divider()),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: Text(
             AppStrings.orDivider,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w400,
               color: AppColors.textTertiary,
             ),
           ),
         ),
-        const Expanded(child: Divider()),
+        Expanded(child: Divider()),
       ],
     );
   }

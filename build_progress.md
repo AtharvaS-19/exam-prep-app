@@ -242,9 +242,9 @@
 - [x] Modify `question_card.dart` — `isBookmarked` optional bool prop (default `false`) added; no visual change inside the card
 
 ## ✅ Phase 6 — Wrong Questions
-- [x] `lib/features/mistakes/providers/mistakes_provider.dart` — `WrongAnswer` immutable model (questionId, subjectId, chapterId, chapterTitle, attemptedAt); `MistakesNotifier extends StateNotifier<List<WrongAnswer>>`; methods: `record(WrongAnswer)` (no duplicates), `remove(questionId)`, `isWrong(questionId) → bool`; exposed via `mistakesProvider`
-- [x] `lib/features/mistakes/screens/mistakes_screen.dart` — `ConsumerWidget`; reads `mistakesProvider`; resolves Questions via `DummyQuestions`; groups by chapter title; `_MistakeTile` with 2-line truncated question + chapter label + Retry chip; taps → practice route with `extra: {questionIds: chapterQuestionIds}`; empty state: check icon + 'No mistakes recorded'
-- [x] Modify `practice_screen.dart` — `_onSubmit()` Riverpod writes before `setState`; `questionIds` optional param added; `initState` filters `DummyQuestions` to provided IDs in order (retry mode); falls back to full chapter list when `questionIds` is null
+- [x] `lib/features/mistakes/providers/mistakes_provider.dart` — `WrongAnswer` immutable model (questionId, subjectId, chapterId, chapterTitle, attemptedAt); `MistakesNotifier extends StateNotifier<List<WrongAnswer>>`; methods: `record(WrongAnswer)` (no duplicates), `remove(questionId)`, `isWrong(questionId) → bool`; exposed via `mistakesProvider`; `retryQuestionIdsProvider` + `initialQuestionIdProvider` (`StateProvider<String?>`) for transient session coordination
+- [x] `lib/features/mistakes/screens/mistakes_screen.dart` — `ConsumerWidget`; reads `mistakesProvider`; resolves Questions via `DummyQuestions`; groups by chapter title; `_MistakeTile` with 2-line truncated question + chapter label + Retry chip; taps → writes `retryQuestionIdsProvider` + `initialQuestionIdProvider` then pushes practice route; empty state: check icon + 'No mistakes recorded'
+- [x] Modify `practice_screen.dart` — `_onSubmit()` Riverpod writes before `setState`; `questionIds` optional param added; `initState` filters `DummyQuestions` to provided IDs in order (retry mode); reads + clears `initialQuestionIdProvider` to set `_currentIndex` after building `_questions`; falls back to index 0 when null or ID not found
 - [x] Modify `router.dart` — practice route builder reads `questionIds` from `state.extra`, passes to `PracticeScreen`; normal navigation (no extra) unchanged
 
 ## ⬜ Phase 7 — Progress Tracking
@@ -257,9 +257,9 @@
 ---
 
 ## Current Task
-**Status:** Phase 6 complete. Ready to begin Phase 7.
+**Status:** Phase 6 complete (including initialQuestionId jump). Ready to begin Phase 7.
 **Next file:** `lib/features/progress/providers/progress_provider.dart`
-**Last completed file:** `practice_screen.dart` — Phase 6 mistakes wiring in _onSubmit()
+**Last completed file:** `bookmarks_screen.dart` + `mistakes_screen.dart` + `practice_screen.dart` + `mistakes_provider.dart` — PracticeScreen initialQuestionId support
 
 ---
 
@@ -275,3 +275,52 @@
 3. Generate one file at a time, update this file after each
 4. Follow existing patterns: const constructors, AppColors/AppSpacing/AppRadius tokens, no inline styles
 5. Riverpod `StateNotifier` pattern for all providers from Phase 5 onward
+
+---
+
+## Engineering Principles
+
+### Navigation
+
+- PracticeScreen is always the single destination for solving questions.
+- Navigation should target Question IDs, not question indexes.
+- Never use indexes for persistent navigation.
+- Normal chapter navigation starts at Question 1.
+- Bookmarks, Mistakes, Continue Learning and future Search should all open PracticeScreen using a Question ID.
+
+---
+
+### Data
+
+- Question.id is the permanent identifier.
+- DummyQuestions is the current source of truth.
+- Firestore will later replace DummyQuestions.
+- Question model should remain stable after Firebase migration whenever possible.
+
+---
+
+### State
+
+- Riverpod StateNotifier pattern for application state.
+- Avoid duplicate sources of truth.
+- Providers should store IDs rather than duplicate Question objects where possible.
+
+---
+
+### UI
+
+- Material 3 only.
+- Premium minimal design.
+- No unnecessary animations.
+- No flashy gradients.
+- Reuse existing widgets before creating new ones.
+
+---
+
+### Coding Rules
+
+- Generate one file at a time.
+- Never modify unrelated files.
+- Prefer extending existing architecture.
+- Never rewrite working features.
+- Keep implementations production-ready.
