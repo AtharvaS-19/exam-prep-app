@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../models/chapter.dart';
+import '../../../learning/models/chapter_progress.dart';
 import '../../../../../shared/constants/app_colors.dart';
 import '../../../../../shared/constants/app_radius.dart';
 import '../../../../../shared/constants/app_spacing.dart';
 
 /// A card widget displaying individual chapter details, progress, and a CTA.
+///
+/// [progress] is the live [ChapterProgress] derived from the Learning Engine.
+/// When provided, all progress values are sourced from [progress]; when null
+/// (defensive default), the card falls back to the static [chapter] fields.
 class ChapterCard extends StatelessWidget {
   const ChapterCard({
     super.key,
@@ -12,9 +17,11 @@ class ChapterCard extends StatelessWidget {
     required this.accentColor,
     required this.index,
     required this.onTap,
+    required this.progress,
   });
 
   final Chapter chapter;
+  final ChapterProgress progress;
   final Color accentColor;
   final int index;
   final VoidCallback onTap;
@@ -22,6 +29,12 @@ class ChapterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String formattedIndex = index.toString().padLeft(2, '0');
+
+    // Derive display values from live ChapterProgress.
+    final bool isStarted = progress.hasActivity;
+    final bool isCompleted = progress.isCompleted;
+    final String ctaLabel =
+        isCompleted ? 'Review' : isStarted ? 'Continue' : 'Start';
 
     return Container(
       decoration: BoxDecoration(
@@ -43,27 +56,14 @@ class ChapterCard extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Index circle
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: accentColor.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            formattedIndex,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: accentColor,
-                            ),
-                          ),
-                        ),
+                      // Index / status indicator
+                      _StatusIndicator(
+                        formattedIndex: formattedIndex,
+                        isCompleted: isCompleted,
+                        accentColor: accentColor,
                       ),
                       const SizedBox(width: AppSpacing.md),
-                      // Title & progress label
+                      // Title & sub-label
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,24 +78,21 @@ class ChapterCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: AppSpacing.xxs),
-                            Text(
-                              chapter.remainingLabel,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.textSecondary,
-                              ),
+                            _SubLabel(
+                              progress: progress,
+                              isStarted: isStarted,
+                              isCompleted: isCompleted,
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      // CTA Button / Arrow
+                      // CTA chip
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            chapter.ctaLabel,
+                            ctaLabel,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -112,31 +109,12 @@ class ChapterCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (chapter.isStarted) ...[
+                  // Progress bar — only shown when the student has started
+                  if (isStarted) ...[
                     const SizedBox(height: AppSpacing.md),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: AppRadius.radiusFull,
-                            child: LinearProgressIndicator(
-                              value: chapter.progress,
-                              minHeight: 4,
-                              backgroundColor: AppColors.progressTrack,
-                              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          '${chapter.progressPercent}%',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
+                    _ProgressRow(
+                      progress: progress,
+                      accentColor: accentColor,
                     ),
                   ],
                 ],
@@ -145,6 +123,152 @@ class ChapterCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── Status indicator ──────────────────────────────────────────────────────────
+
+/// Shows a green check for completed chapters, the numbered index otherwise.
+class _StatusIndicator extends StatelessWidget {
+  const _StatusIndicator({
+    required this.formattedIndex,
+    required this.isCompleted,
+    required this.accentColor,
+  });
+
+  final String formattedIndex;
+  final bool isCompleted;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: isCompleted
+            ? AppColors.success.withValues(alpha: 0.1)
+            : accentColor.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: isCompleted
+            ? const Icon(
+                Icons.check_rounded,
+                size: 15,
+                color: AppColors.success,
+              )
+            : Text(
+                formattedIndex,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: accentColor,
+                ),
+              ),
+      ),
+    );
+  }
+}
+
+// ── Sub-label ─────────────────────────────────────────────────────────────────
+
+/// Displays a contextual description beneath the chapter title.
+///
+/// - Not started: total question count
+/// - In progress: remaining questions
+/// - Completed: "Completed · N% accuracy"
+class _SubLabel extends StatelessWidget {
+  const _SubLabel({
+    required this.progress,
+    required this.isStarted,
+    required this.isCompleted,
+  });
+
+  final ChapterProgress progress;
+  final bool isStarted;
+  final bool isCompleted;
+
+  @override
+  Widget build(BuildContext context) {
+    final String label;
+
+    if (isCompleted) {
+      label = 'Completed · ${progress.accuracyPercent}% accuracy';
+    } else if (isStarted) {
+      final remaining =
+          progress.totalQuestions - progress.attemptedQuestions;
+      label = '$remaining remaining';
+    } else {
+      label = '${progress.totalQuestions} questions';
+    }
+
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+        color: isCompleted ? AppColors.success : AppColors.textSecondary,
+      ),
+    );
+  }
+}
+
+// ── Progress row ──────────────────────────────────────────────────────────────
+
+/// Linear progress bar + completion% + accuracy pill shown for started chapters.
+class _ProgressRow extends StatelessWidget {
+  const _ProgressRow({
+    required this.progress,
+    required this.accentColor,
+  });
+
+  final ChapterProgress progress;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: AppRadius.radiusFull,
+                child: LinearProgressIndicator(
+                  value: progress.completionPercentage,
+                  minHeight: 4,
+                  backgroundColor: AppColors.progressTrack,
+                  valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              '${progress.completionPercent}%',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        if (progress.hasActivity) ...[
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            '${progress.attemptedQuestions} of ${progress.totalQuestions} attempted · '
+            '${progress.accuracyPercent}% accuracy',
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textTertiary,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

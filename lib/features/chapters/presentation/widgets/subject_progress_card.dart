@@ -1,36 +1,27 @@
 import 'package:flutter/material.dart';
-import '../../models/chapter.dart';
+import '../../../learning/models/subject_progress.dart';
 import '../../../../../shared/constants/app_colors.dart';
 import '../../../../../shared/constants/app_radius.dart';
 import '../../../../../shared/constants/app_spacing.dart';
 
 /// Displays the overall progress summary for a subject.
 ///
-/// Derives all values from [chapters] — no external state needed.
-/// Reusable across any screen that needs a subject-level progress overview.
+/// Receives a live [SubjectProgress] derived from the Learning Engine.
+/// All values are computed from actual attempt history — not static dummy data.
 class SubjectProgressCard extends StatelessWidget {
   const SubjectProgressCard({
     super.key,
-    required this.chapters,
+    required this.subjectProgress,
     required this.accentColor,
+    required this.totalChapters,
   });
 
-  final List<Chapter> chapters;
+  final SubjectProgress subjectProgress;
   final Color accentColor;
 
-  int get _totalQuestions =>
-      chapters.fold(0, (sum, c) => sum + c.totalQuestions);
-
-  int get _completedQuestions =>
-      chapters.fold(0, (sum, c) => sum + c.completedQuestions);
-
-  double get _overallProgress =>
-      _totalQuestions == 0 ? 0.0 : _completedQuestions / _totalQuestions;
-
-  int get _overallPercent => (_overallProgress * 100).round();
-
-  int get _chaptersCompleted =>
-      chapters.where((c) => c.isCompleted).length;
+  /// Total number of chapters in this subject, used for the "N chapters done"
+  /// stat. Passed from the caller which owns the chapter list.
+  final int totalChapters;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +35,7 @@ class SubjectProgressCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top row: percent + chapters done
+          // Top row: completion % + stat badges
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -66,7 +57,7 @@ class SubjectProgressCard extends StatelessWidget {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: '$_overallPercent',
+                            text: '${subjectProgress.completionPercent}',
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 36,
@@ -92,19 +83,27 @@ class SubjectProgressCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Stats column
+              // Stat column
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   _StatBadge(
-                    value: '$_completedQuestions / $_totalQuestions',
+                    value:
+                        '${subjectProgress.attemptedQuestions} / ${subjectProgress.totalQuestions}',
                     label: 'questions',
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  _StatBadge(
-                    value: '$_chaptersCompleted / ${chapters.length}',
-                    label: 'chapters done',
-                  ),
+                  // Accuracy badge — only meaningful when there's activity
+                  if (subjectProgress.hasActivity)
+                    _StatBadge(
+                      value: '${subjectProgress.accuracyPercent}%',
+                      label: 'accuracy',
+                    )
+                  else
+                    _StatBadge(
+                      value: '$totalChapters',
+                      label: 'chapters',
+                    ),
                 ],
               ),
             ],
@@ -114,7 +113,7 @@ class SubjectProgressCard extends StatelessWidget {
           ClipRRect(
             borderRadius: AppRadius.radiusFull,
             child: LinearProgressIndicator(
-              value: _overallProgress,
+              value: subjectProgress.completionPercentage,
               minHeight: 7,
               backgroundColor: AppColors.progressTrack,
               valueColor: AlwaysStoppedAnimation<Color>(accentColor),

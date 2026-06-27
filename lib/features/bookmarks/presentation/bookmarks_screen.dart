@@ -386,7 +386,7 @@ class _EmptyState extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     color: AppColors.cardBackground,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: AppRadius.radiusLg,
                     border: Border.all(color: AppColors.border),
                   ),
                   child: const Icon(

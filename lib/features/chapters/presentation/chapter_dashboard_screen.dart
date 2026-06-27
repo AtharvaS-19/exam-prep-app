@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/dummy_chapters.dart';
 import '../models/chapter.dart';
 import '../../subjects/data/subjects_data.dart';
 import '../../subjects/models/subject_model.dart';
+import '../../learning/models/chapter_progress.dart';
+import '../../learning/providers/chapter_progress_provider.dart';
 import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_radius.dart';
 import '../../../shared/constants/app_spacing.dart';
@@ -24,19 +27,21 @@ extension ChapterFilterLabel on ChapterFilter {
 
 /// The Chapter Dashboard Screen.
 ///
-/// Displays overall subject progress, a search bar, filter chips,
-/// and the full chapter list. All state is local — single screen,
-/// no external state management needed.
-class ChapterDashboardScreen extends StatefulWidget {
+/// Displays overall subject progress (live from Learning Engine), a search bar,
+/// filter chips, and the full chapter list. Filter logic is driven by live
+/// [ChapterProgress] so "In Progress" / "Completed" reflect actual attempts.
+class ChapterDashboardScreen extends ConsumerStatefulWidget {
   const ChapterDashboardScreen({super.key, required this.subjectId});
 
   final String subjectId;
 
   @override
-  State<ChapterDashboardScreen> createState() => _ChapterDashboardScreenState();
+  ConsumerState<ChapterDashboardScreen> createState() =>
+      _ChapterDashboardScreenState();
 }
 
-class _ChapterDashboardScreenState extends State<ChapterDashboardScreen> {
+class _ChapterDashboardScreenState
+    extends ConsumerState<ChapterDashboardScreen> {
   late final List<Chapter> _allChapters;
   late final SubjectModel? _subject;
 
@@ -60,8 +65,12 @@ class _ChapterDashboardScreenState extends State<ChapterDashboardScreen> {
     super.dispose();
   }
 
-  /// Applies the active search query and filter to the full chapter list.
-  List<Chapter> get _filteredChapters {
+  /// Returns live [ChapterProgress] for [chapterId] from the Learning Engine.
+  ChapterProgress _progressFor(String chapterId) =>
+      ref.watch(chapterProgressProvider(chapterId));
+
+  /// Applies the active search query and live-progress filter to the chapter list.
+  List<Chapter> _filteredChapters() {
     Iterable<Chapter> result = _allChapters;
 
     // Apply search
@@ -71,13 +80,19 @@ class _ChapterDashboardScreenState extends State<ChapterDashboardScreen> {
       );
     }
 
-    // Apply filter
+    // Apply filter using live ChapterProgress
     result = switch (_activeFilter) {
       ChapterFilter.all => result,
-      ChapterFilter.inProgress =>
-        result.where((c) => c.isStarted && !c.isCompleted),
-      ChapterFilter.completed => result.where((c) => c.isCompleted),
-      ChapterFilter.notStarted => result.where((c) => !c.isStarted),
+      ChapterFilter.inProgress => result.where((c) {
+          final p = _progressFor(c.id);
+          return p.hasActivity && !p.isCompleted;
+        }),
+      ChapterFilter.completed => result.where((c) {
+          return _progressFor(c.id).isCompleted;
+        }),
+      ChapterFilter.notStarted => result.where((c) {
+          return !_progressFor(c.id).hasActivity;
+        }),
     };
 
     return result.toList();
@@ -103,7 +118,9 @@ class _ChapterDashboardScreenState extends State<ChapterDashboardScreen> {
       );
     }
 
-    final filtered = _filteredChapters;
+    final filtered = _filteredChapters();
+    final subjectProgress =
+        ref.watch(subjectProgressProvider(widget.subjectId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -129,8 +146,9 @@ class _ChapterDashboardScreenState extends State<ChapterDashboardScreen> {
                     _SubjectIntro(subject: _subject!),
                     const SizedBox(height: AppSpacing.lg),
                     SubjectProgressCard(
-                      chapters: _allChapters,
+                      subjectProgress: subjectProgress,
                       accentColor: _subject!.accentColor,
+                      totalChapters: _allChapters.length,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     // ── Search bar ───────────────────────────────────────────
@@ -169,11 +187,13 @@ class _ChapterDashboardScreenState extends State<ChapterDashboardScreen> {
                         // Show original 1-based index for numbering
                         final originalIndex =
                             _allChapters.indexOf(chapter) + 1;
+                        final progress = _progressFor(chapter.id);
                         return ChapterCard(
                           key: ValueKey(chapter.id),
                           chapter: chapter,
                           accentColor: _subject!.accentColor,
                           index: originalIndex,
+                          progress: progress,
                           onTap: () => _onChapterTapped(chapter),
                         );
                       },

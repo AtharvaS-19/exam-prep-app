@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:exam_prep_app/features/bookmarks/providers/bookmark_provider.dart';
+import 'package:exam_prep_app/features/learning/models/question_attempt.dart';
+import 'package:exam_prep_app/features/learning/providers/learning_provider.dart';
 import 'package:exam_prep_app/features/mistakes/providers/mistakes_provider.dart';
 import 'package:exam_prep_app/features/practice/data/dummy_questions.dart';
 import 'package:exam_prep_app/features/practice/models/question.dart';
@@ -12,7 +14,7 @@ import '../../../../shared/constants/app_colors.dart';
 import '../../../../shared/constants/app_spacing.dart';
 import '../../../../shared/widgets/primary_button.dart';
 
-/// The Practice Screen — Phase 4 core feature, extended in Phases 5 & 6.
+/// The Practice Screen — Phase 4 core feature, extended in Phases 5, 6 & 7.
 ///
 /// Manages the full question-solving session for a given chapter:
 /// - Loads questions from [DummyQuestions]
@@ -26,6 +28,8 @@ import '../../../../shared/widgets/primary_button.dart';
 ///   are included in the session, in the given order.
 /// - [initialQuestionIdProvider]: when set, the session opens at that question
 ///   ID rather than the first question. Falls back to index 0 if not found.
+/// - Phase 7: every submission is recorded to [learningProvider] as a
+///   [QuestionAttempt] for the Learning Engine.
 class PracticeScreen extends ConsumerStatefulWidget {
   const PracticeScreen({
     super.key,
@@ -48,6 +52,10 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
   int _currentIndex = 0;
   int? _selectedOptionIndex;
   bool _isSubmitted = false;
+
+  /// Wall-clock time when the current question became active.
+  /// Used to compute [QuestionAttempt.timeTaken] on submission.
+  late DateTime _questionStartTime;
 
   /// Tracks correct/incorrect per question for the result screen.
   final Map<String, bool> _results = {};
@@ -85,6 +93,8 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
       final idx = _questions.indexWhere((q) => q.id == initialId);
       if (idx != -1) _currentIndex = idx;
     }
+
+    _questionStartTime = DateTime.now();
   }
 
   @override
@@ -120,6 +130,22 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
     } else {
       ref.read(mistakesProvider.notifier).remove(_currentQuestion.id);
     }
+    // Phase 7: record the learning event.
+    final now = DateTime.now();
+    ref.read(learningProvider.notifier).record(
+      QuestionAttempt(
+        questionId: _currentQuestion.id,
+        subjectId: widget.subjectId,
+        chapterId: widget.chapterId,
+        selectedOption: _selectedOptionIndex!,
+        correctOption: _currentQuestion.correctOptionIndex,
+        isCorrect: correct,
+        attemptedAt: now,
+        timeTaken: now.difference(_questionStartTime),
+        attemptNumber:
+            ref.read(learningProvider.notifier).countFor(_currentQuestion.id) + 1,
+      ),
+    );
     setState(() {
       _isSubmitted = true;
       _results[_currentQuestion.id] = correct;
@@ -136,6 +162,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
       _selectedOptionIndex = null;
       _isSubmitted = false;
     });
+    _questionStartTime = DateTime.now();
     // Scroll back to top when moving to a new question
     _scrollController.animateTo(
       0,

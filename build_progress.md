@@ -247,19 +247,42 @@
 - [x] Modify `practice_screen.dart` — `_onSubmit()` Riverpod writes before `setState`; `questionIds` optional param added; `initState` filters `DummyQuestions` to provided IDs in order (retry mode); reads + clears `initialQuestionIdProvider` to set `_currentIndex` after building `_questions`; falls back to index 0 when null or ID not found
 - [x] Modify `router.dart` — practice route builder reads `questionIds` from `state.extra`, passes to `PracticeScreen`; normal navigation (no extra) unchanged
 
-## ⬜ Phase 7 — Progress Tracking
-- [ ] `lib/features/progress/providers/progress_provider.dart`
-- [ ] `lib/features/progress/screens/progress_screen.dart` (replace placeholder)
+## ✅ Phase 7 — Learning Engine
+- [x] `lib/features/learning/models/question_attempt.dart` — `QuestionAttempt` immutable model; fields: `questionId`, `subjectId`, `chapterId`, `selectedOption`, `correctOption`, `isCorrect`, `attemptedAt`(DateTime), `timeTaken`(Duration), `attemptNumber`(int); `attemptNumber` is always computed by the notifier, never by callers
+- [x] `lib/features/learning/providers/learning_provider.dart` — `LearningNotifier extends StateNotifier<List<QuestionAttempt>>`; methods: `record(QuestionAttempt)`, `attemptsFor(questionId) → List`, `latestAttemptFor(questionId) → QuestionAttempt?`, `countFor(questionId) → int`; exposed via `learningProvider` (StateNotifierProvider); no analytics, no progress calculations
+- [x] Modify `practice_screen.dart` — added `_questionStartTime` (DateTime) field; initialised in `initState`, reset in `_onNext`; `_onSubmit` appends a `QuestionAttempt` to `learningProvider` after the existing mistakes logic, before `setState`; `attemptNumber` computed via `countFor` at call site
 
-## ⬜ Phase 8 — Books (Secondary)
-- [ ] TBD
+## ✅ Phase 8 — Derived Learning State
+- [x] `lib/features/learning/models/progress_stats.dart` — `ProgressStats` immutable value object; fields: `totalAttempts`, `correctAttempts`, `incorrectAttempts`, `overallAccuracy`(double 0–1), `latestAttempt`(QuestionAttempt?), `completedQuestionIds`(Set<String>); factory `ProgressStats.fromAttempts(List<QuestionAttempt>)` handles all derivation; computed getters: `accuracyPercent`(int), `hasActivity`(bool)
+- [x] `lib/features/learning/providers/progress_stats_provider.dart` — all providers are read-only `Provider` / `Provider.family`; `progressStatsProvider` → overall `ProgressStats` from full history; `chapterStatsProvider(chapterId)` → scoped `ProgressStats` filtered by chapterId; `subjectStatsProvider(subjectId)` → scoped `ProgressStats` filtered by subjectId; `completedQuestionsProvider` → `Set<String>` convenience wrapper; `latestAttemptProvider` → `QuestionAttempt?` for Continue Learning
+- [x] `lib/features/learning/models/chapter_progress.dart` — `ChapterProgress` immutable value object; fields: `chapterId`, `totalQuestions`, `attemptedQuestions`, `correctQuestions`, `incorrectQuestions`, `completionPercentage`(double 0–1), `accuracyPercentage`(double 0–1); factory `ChapterProgress.fromAttempts({chapterId, totalQuestions, attempts})`; correct/incorrect based on latest attempt per question; computed getters: `completionPercent`, `accuracyPercent`, `hasActivity`, `isCompleted`
+- [x] `lib/features/learning/models/subject_progress.dart` — `SubjectProgress` immutable value object; identical structure to `ChapterProgress` but scoped to a subject; fields: `subjectId`, `totalQuestions`, `attemptedQuestions`, `correctQuestions`, `incorrectQuestions`, `completionPercentage`, `accuracyPercentage`; computed getters: `completionPercent`, `accuracyPercent`, `hasActivity`
+- [x] `lib/features/learning/providers/chapter_progress_provider.dart` — `chapterProgressProvider(chapterId)` → `ChapterProgress` derived from `learningProvider` + `DummyQuestions.forChapter`; `subjectProgressProvider(subjectId)` → `SubjectProgress` derived from `learningProvider` + `DummyChapters.forSubject`; both are `Provider.family`, fully reactive, zero manual refresh
+- [x] `lib/features/learning/providers/learning_insights_provider.dart` — `continueLearningProvider` → `QuestionAttempt?` (delegates to existing `latestAttemptProvider`; extensible); `weakestChapterProvider` → `String?` (chapter ID with lowest latest-attempt accuracy among attempted chapters); `strongestChapterProvider` → `String?` (highest accuracy); `mostPracticedChapterProvider` → `String?` (highest raw attempt count); `recentlyCompletedQuestionsProvider` → `List<String>` (distinct question IDs sorted newest-first by latest attempt); private `_latestAccuracy` helper shared by weak/strong providers
+
+## ✅ Phase 9 — Progress Experience
+- [x] `lib/features/progress/presentation/progress_screen.dart` — replaced static placeholder; `ConsumerWidget`; reads `progressStatsProvider`, `subjectProgressProvider(id)`, `continueLearningProvider`, `weakestChapterProvider`, `strongestChapterProvider`, `mostPracticedChapterProvider`, `recentlyCompletedQuestionsProvider`; sections: Header (adaptive subtitle), Overview (`_StatCard` row: attempts + accuracy), Subjects (`_SubjectProgressTile` with linear bar + completion% + accuracy%), Insights (`_InsightTile` row: continue / needs work / strongest / most practiced), Recently Solved (up to 8 question IDs newest-first); Insights + Recently Solved sections hidden when `!hasActivity`; zero business logic in UI
+
+## ✅ Phase 9.2 — Chapter Progress Experience
+- [x] `lib/features/chapters/presentation/chapter_dashboard_screen.dart` — converted to `ConsumerStatefulWidget`; filter logic (`inProgress`, `completed`, `notStarted`) now driven by live `chapterProgressProvider` instead of static `Chapter` fields; passes `ChapterProgress` into every `ChapterCard`; `SubjectProgressCard` receives live `subjectProgressProvider` data; no business logic added
+- [x] `lib/features/chapters/presentation/widgets/chapter_card.dart` — accepts `ChapterProgress progress` (required); derives `isStarted`, `isCompleted`, `ctaLabel` from live progress; `_StatusIndicator` shows green check on completed chapters; `_SubLabel` shows total questions / remaining / "Completed · N% accuracy" based on state; `_ProgressRow` shows linear bar + "N of M attempted · X% accuracy" — visible only when `isStarted`; no static `chapter.*` computed fields used for progress
+- [x] `lib/features/chapters/presentation/widgets/subject_progress_card.dart` — refactored to accept `SubjectProgress subjectProgress` + `totalChapters`; derives all display values from live attempt history; accuracy stat badge shown when `hasActivity`, chapter count shown otherwise; progress bar driven by `subjectProgress.completionPercentage`
+
+## ✅ Phase 9.3 — Personalized Home Experience
+- [x] `lib/features/home/presentation/home_screen.dart` — converted `StatelessWidget` to `ConsumerWidget` to integrate Learning Engine providers; refactored layout into 6 cohesive sections: Welcome (personalized header), Continue Learning (hero card reading `continueLearningProvider` and `chapterProgressProvider`), Quick Learning Stats (visually lightweight attempted/accuracy metrics), Subject Progress (compact completion percentage row + linear bar for all subjects), Learning Insights (Weakest and Most Practiced chapters), and Quick Actions (navigation to bookmarks, mistakes, progress); completely removed all dummy data placeholders.
+
+## ✅ Phase 9.4 — Premium UX Polish
+- [x] `lib/features/mistakes/presentation/mistakes_screen.dart` — AppBar and headers renamed to "Mistakes"; empty state container radius converted to `AppRadius.radiusLg`; spelling fixed ("practising" -> "practicing").
+- [x] `lib/features/bookmarks/presentation/bookmarks_screen.dart` — empty state container radius updated to `AppRadius.radiusLg` for consistent visual tokens.
+- [x] `lib/features/practice/presentation/practice_result_screen.dart` — progress bar radius converted to `AppRadius.radiusFull` instead of raw circular value.
+- [x] `lib/features/progress/presentation/progress_screen.dart` — recently solved section refactored to look up and show truncated question text via `DummyQuestions` instead of raw ID strings, layout tweaked to align numbers and multi-line text nicely.
 
 ---
 
 ## Current Task
-**Status:** Phase 6 complete (including initialQuestionId jump). Ready to begin Phase 7.
-**Next file:** `lib/features/progress/providers/progress_provider.dart`
-**Last completed file:** `bookmarks_screen.dart` + `mistakes_screen.dart` + `practice_screen.dart` + `mistakes_provider.dart` — PracticeScreen initialQuestionId support
+**Status:** Phase 9.4 complete. UX Polish phase completed with consistent tokens, improved copy, and real question text in recently solved panel.
+**Next file:** TBD
+**Last completed file:** `progress_screen.dart` + `mistakes_screen.dart` + `bookmarks_screen.dart` + `practice_result_screen.dart` — Phase 9.4 Premium UX Polish
 
 ---
 

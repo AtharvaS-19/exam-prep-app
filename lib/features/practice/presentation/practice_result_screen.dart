@@ -221,7 +221,7 @@ class _ScoreCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           // Progress bar
           ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(999)),
+            borderRadius: AppRadius.radiusFull,
             child: LinearProgressIndicator(
               value: total == 0 ? 0 : correct / total,
               minHeight: 7,

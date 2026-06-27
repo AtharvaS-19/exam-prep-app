@@ -72,7 +72,7 @@ class MistakesScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        title: const Text('Wrong Questions'),
+        title: const Text('Mistakes'),
       ),
       body: SafeArea(
         child: wrongs.isEmpty
@@ -113,7 +113,7 @@ class _MistakeList extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Wrong Questions',
+                  'Mistakes',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -356,7 +356,7 @@ class _EmptyState extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(top: AppSpacing.xl, bottom: AppSpacing.xs),
             child: Text(
-              'Wrong Questions',
+              'Mistakes',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -383,7 +383,7 @@ class _EmptyState extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     color: AppColors.cardBackground,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: AppRadius.radiusLg,
                     border: Border.all(color: AppColors.border),
                   ),
                   child: const Icon(
@@ -404,7 +404,7 @@ class _EmptyState extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 const Text(
-                  'Keep practising — wrong answers will\nshow up here automatically.',
+                  'Keep practicing — wrong answers will\nshow up here automatically.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13,
