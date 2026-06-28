@@ -269,7 +269,7 @@
 - [x] `lib/features/chapters/presentation/widgets/subject_progress_card.dart` — refactored to accept `SubjectProgress subjectProgress` + `totalChapters`; derives all display values from live attempt history; accuracy stat badge shown when `hasActivity`, chapter count shown otherwise; progress bar driven by `subjectProgress.completionPercentage`
 
 ## ✅ Phase 9.3 — Personalized Home Experience
-- [x] `lib/features/home/presentation/home_screen.dart` — converted `StatelessWidget` to `ConsumerWidget` to integrate Learning Engine providers; refactored layout into 6 cohesive sections: Welcome (personalized header), Continue Learning (hero card reading `continueLearningProvider` and `chapterProgressProvider`), Quick Learning Stats (visually lightweight attempted/accuracy metrics), Subject Progress (compact completion percentage row + linear bar for all subjects), Learning Insights (Weakest and Most Practiced chapters), and Quick Actions (navigation to bookmarks, mistakes, progress); completely removed all dummy data placeholders.
+- [x] `lib/features/home/presentation/home_screen.dart` — converted `StatelessWidget` to `ConsumerWidget` to integrate Learning Engine providers; refactored layout into 6 cohesive sections: Welcome (personalized header), Continue Learning (hero card reading `continueLearningProvider` and `chapterProgressProvider`), Quick Learning Stats (visually lightweight attempted/accuracy metrics), Quick Actions (navigation to bookmarks, mistakes, progress), Learning Insights (Weakest and Most Practiced chapters), and Subject Progress (compact completion percentage row + linear bar for all subjects); completely removed all dummy data placeholders. Optimized layout order to surface high-frequency Quick Actions right below stats.
 
 ## ✅ Phase 9.4 — Premium UX Polish
 - [x] `lib/features/mistakes/presentation/mistakes_screen.dart` — AppBar and headers renamed to "Mistakes"; empty state container radius converted to `AppRadius.radiusLg`; spelling fixed ("practising" -> "practicing").
@@ -280,9 +280,9 @@
 ---
 
 ## Current Task
-**Status:** Phase 9.4 complete. UX Polish phase completed with consistent tokens, improved copy, and real question text in recently solved panel.
+**Status:** Home Screen layout refined. Quick Actions moved up to improve high-frequency access hierarchy, preceding Insights and Subjects. Code remains clean, with no analyze warnings or lints.
 **Next file:** TBD
-**Last completed file:** `progress_screen.dart` + `mistakes_screen.dart` + `bookmarks_screen.dart` + `practice_result_screen.dart` — Phase 9.4 Premium UX Polish
+**Last completed file:** `home_screen.dart` — Home Screen layout hierarchy refinement.
 
 ---
 

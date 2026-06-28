@@ -54,10 +54,10 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xxl),
                 ],
 
-                // ── Section 4: Subject progress ──────────────────────────────
-                const _SectionLabel('Subjects'),
+                // ── Section 4: Quick actions ─────────────────────────────────
+                const _SectionLabel('Quick actions'),
                 const SizedBox(height: AppSpacing.sm),
-                _SubjectProgressColumn(ref: ref),
+                const _QuickActionsRow(),
                 const SizedBox(height: AppSpacing.xxl),
 
                 // ── Section 5: Insights (only when activity exists) ──────────
@@ -68,10 +68,10 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xxl),
                 ],
 
-                // ── Section 6: Quick actions ─────────────────────────────────
-                const _SectionLabel('Quick actions'),
+                // ── Section 6: Subject progress ──────────────────────────────
+                const _SectionLabel('Subjects'),
                 const SizedBox(height: AppSpacing.sm),
-                const _QuickActionsRow(),
+                _SubjectProgressColumn(ref: ref),
               ]),
             ),
           ),
